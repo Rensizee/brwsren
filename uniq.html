@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteBrowser</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #191919;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .logo {
+            margin-bottom: 150px;
+            width: 228px;
+            height: 228px;
+            background: url('https://cdn-icons-png.flaticon.com/512/5566/5566209.png') no-repeat center;
+            background-size: contain;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out forwards;
+            filter: drop-shadow(0 0 20px rgba(103, 72, 216, 0.5));
+            transition: filter 0.5s ease-in-out;
+        }
+
+        .selected-engine {
+            font-size: 20px;
+            color: white;
+            margin-bottom: 15px;
+            opacity: 0;
+            animation: fadeIn 1.5s ease-in-out forwards 0.8s;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(30, 30, 30, 0.9);
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            animation: fadeIn 1.5s ease-in-out forwards 0.5s;
+        }
+
+        .search-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, opacity 0.2s;
+            opacity: 0.6;
+        }
+        .search-icon:hover {
+            transform: scale(1.1);  
+        }
+        
+        .selected-search {
+            transform: scale(1.3);
+            opacity: 1 !important;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .google-glow {
+    filter: drop-shadow(0 0 10px #4285F4);
+}
+
+.bing-glow {
+    filter: drop-shadow(0 0 10px #008373);
+}
+
+.yandex-glow {
+    filter: drop-shadow(0 0 10px #FF0000);
+}
+
+
+        input {
+            width: 320px;
+            padding: 12px;
+            font-size: 18px;
+            border: none;
+            border-radius: 30px;
+            outline: none;
+            background: #444;
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particles"></canvas>
+
+    <div class="logo"></div>
+    <div class="selected-engine"></div>
+
+    <div class="search-container">
+        <img src="https://cdn-icons-png.flaticon.com/128/300/300221.png" class="search-icon" id="google-icon" onclick="setSearchEngine('google')">
+        <img src="https://cdn-icons-png.flaticon.com/128/732/732186.png" class="search-icon" id="bing-icon" onclick="setSearchEngine('bing')">
+        <img src="https://cdn-icons-png.flaticon.com/128/226/226266.png" class="search-icon" id="yandex-icon" onclick="setSearchEngine('yandex')">
+        <input id="searchInput" type="text" placeholder="Что вы ищете?">
+    </div>
+
+    <script>
+        let currentEngine = "https://www.google.com/search?q=";
+
+        function setSearchEngine(engine) {
+            let engines = {
+                "google": "https://www.google.com/search?q=",
+                "bing": "https://www.bing.com/search?q=",
+                "yandex": "https://yandex.ru/search/?text="
+                };
+
+                currentEngine = engines[engine];
+
+    document.querySelectorAll(".search-icon").forEach(icon => {
+        icon.classList.remove("google-glow", "bing-glow", "yandex-glow", "selected-search");
+    });
+
+    let selectedIcon = document.getElementById(engine + "-icon");
+    selectedIcon.classList.add("selected-search", engine + "-glow");
+}
+
+        document.getElementById("google-icon").classList.add("selected-search");
+        document.getElementById("searchInput").addEventListener("input", function() {
+    let value = this.value.toLowerCase();
+    if (value.startsWith("google.")) {
+        setSearchEngine('google');
+        this.value = "";
+    } else if (value.startsWith("bing.")) {
+        setSearchEngine('bing');
+        this.value = "";
+    } else if (value.startsWith("yandex.")) {
+        setSearchEngine('yandex');
+        this.value = "";
+    }
+});
+
+document.getElementById("searchInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        let query = this.value.trim();
+        if (query) {
+            window.location.href = currentEngine + encodeURIComponent(query);
+        }
+    }
+});
+
+
+
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let particlesArray = [];
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, size, speedX, speedY) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.speedX = speedX;
+                this.speedY = speedY;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = "rgba(255,255,255,0.4)";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function createParticles() {
+            particlesArray = [];
+            for (let i = 0; i < 100; i++) {
+                let size = Math.random() * 3 + 1;
+                let x = Math.random() * canvas.width;
+                let y = Math.random() * canvas.height;
+                let speedX = (Math.random() - 0.5) * 2;
+                let speedY = (Math.random() - 0.5) * 2;
+                particlesArray.push(new Particle(x, y, size, speedX, speedY));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let particle of particlesArray) {
+                particle.update();
+                particle.draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        createParticles();
+        animateParticles();
+    </script>
+
+</body>
+</html>
